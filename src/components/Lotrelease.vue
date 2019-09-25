@@ -59,8 +59,8 @@
       :span-method="objectSpanMethod"
       border
       stripe
-      max-height="750"
-      v-loading="loading"
+      max-height="650"
+      v-loading.fullscreen.lock="loading"
       element-loading-text="努力加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.1)"
@@ -71,12 +71,24 @@
       <el-table-column align="center" width="140" prop="mode" fixed="left">
         <template slot="header">
           <!-- <ul style="padding-left:0"> -->
-          <ul style="padding-inline-start: 0;">
+          <!-- <ul style="padding-inline-start: 0;">
             <li>{{firsthead.first}}</li>
             <li>{{firsthead.second}}</li>
             <li>{{firsthead.third}}</li>
             <li>{{firsthead.forth}}</li>
-          </ul>
+          </ul>-->
+          <tr>
+            <td style="border-right:0">{{firsthead.first}}</td>
+          </tr>
+          <tr>
+            <td style="border-right:0">{{firsthead.second}}</td>
+          </tr>
+          <tr>
+            <td style="border-right:0">{{firsthead.third}}</td>
+          </tr>
+          <tr>
+            <td style="border-right:0">{{firsthead.forth}}</td>
+          </tr>
         </template>
       </el-table-column>
       <el-table-column
@@ -87,14 +99,28 @@
         width="180"
       >
         <template slot="header">
-          <ul style="padding-inline-start: 0;">
+          <!-- <ul style="padding-inline-start: 0;">
             <li>{{item.品名}}</li>
             <li>{{item.简称}}</li>
             <li>{{item.面取数}}</li>
             <li @click="querylot(item.LOTNO)">
               <el-link>{{item.LOTNO}}</el-link>
             </li>
-          </ul>
+          </ul>-->
+          <tr>
+            <td style="border-right:0">{{item.品名}}</td>
+          </tr>
+          <tr>
+            <td style="border-right:0">{{item.简称}}</td>
+          </tr>
+          <tr>
+            <td style="border-right:0">{{item.面取数}}</td>
+          </tr>
+          <tr>
+            <td @click="querylot(item.LOTNO)" style="border-bottom: 0;border-right: 0">
+              <el-link>{{item.LOTNO}}</el-link>
+            </td>
+          </tr>
         </template>
       </el-table-column>
     </el-table>
@@ -248,7 +274,7 @@ export default {
       let table = document.querySelector("#mytable").cloneNode(true);
       // fixed属性导致多出一个table，会下载重复内容，删除掉
       table.removeChild(table.querySelector(".el-table__fixed"));
-      let wb = XLSX.utils.table_to_book(table, { raw: true }); 
+      let wb = XLSX.utils.table_to_book(table, { raw: true });
       /* get binary string as output */
       let wbout = XLSX.write(wb, {
         bookType: "xlsx",
@@ -258,7 +284,7 @@ export default {
       try {
         FileSaver.saveAs(
           new Blob([wbout], { type: "application/octet-stream" }),
-           "lotrelease.xlsx"
+          "lotrelease.xlsx"
         );
       } catch (e) {
         if (typeof console !== "undefined") console.log(e, wbout);
@@ -331,9 +357,15 @@ th {
   padding: 0 !important;
 }
 td {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  word-break: keep-all !important;
+  padding: 0 !important;
+  height: 30px !important;
   width: 190px !important;
   text-align: center !important;
 }
+
 
 .el-table__fixed-right {
   height: 100% !important;
