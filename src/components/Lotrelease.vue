@@ -27,12 +27,16 @@
           <el-input v-model="form.品名" placeholder="品名"></el-input>
         </el-form-item>
         <el-form-item label="工段" class="inputstyle" prop="工段">
-          <el-select v-model="form.工段" placeholder="工段" @change="querymode">
-            <el-option class="optionstyle"></el-option>
+          <el-select v-model="form.工段" placeholder="工段" >
+            <el-option label="" value="" class="optionstyle"></el-option>
             <el-option label="G" value="G" class="optionstyle"></el-option>
+            <el-option label="D" value="D" class="optionstyle"></el-option>
+            <el-option label="中试线" value="中试线" class="optionstyle"></el-option>
+            <el-option label="VI检" value="VI检" class="optionstyle"></el-option>
+            <el-option label="客诉解析" value="客诉解析" class="optionstyle"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="不良模式" class="inputstyle" prop="不良模式">
+        <!-- <el-form-item label="不良模式" class="inputstyle" prop="不良模式">
           <el-select v-model="form.不良模式" placeholder="不良模式">
             <el-option></el-option>
             <el-option
@@ -43,7 +47,7 @@
               :key="i"
             ></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item>
           <el-button type="primary" @click="onSubmit('form')">查询</el-button>
           <el-button type="warning" @click="resetForm('form')">重置</el-button>
@@ -64,6 +68,7 @@
       element-loading-text="努力加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.1)"
+      :cell-style="tableCellClasscolor"
     >
       <el-table-column width="50" label="检查" align="center" fixed>
         <h3>G检</h3>
@@ -124,7 +129,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-drawer :visible.sync="table" direction="ttb" size="60%" title="LOT异常处置信息">
+    <el-drawer :visible.sync="table" direction="btt" size="60%" title="LOT异常处置信息">
       <h3>LOT:{{querylotNo}}</h3>
       <el-table
         :data="LotData"
@@ -147,178 +152,183 @@
   </div>
 </template>
 <script>
-import FileSaver from "file-saver";
-import XLSX from "xlsx";
-import axios from "axios";
-import qs from "qs";
+import FileSaver from 'file-saver'
+import XLSX from 'xlsx'
+import axios from 'axios'
+import qs from 'qs'
 export default {
-  data() {
+  data () {
     return {
-      querylotNo: "",
+      querylotNo: '',
       LotData: [],
       loading: false,
       table: false,
       tableData: [],
       form: {
-        开始日期: "",
-        结束日期: "",
-        LOT: "",
-        品名: "",
-        工段: "",
-        不良模式: ""
+        开始日期: '',
+        结束日期: '',
+        LOT: '',
+        品名: '',
+        工段: '',
+        不良模式: ''
       },
       firsthead: {
-        first: "品名",
-        second: "简称",
-        third: "面取数",
-        forth: "LOTNO"
+        first: '品名',
+        second: '简称',
+        third: '面取数',
+        forth: 'LOTNO'
       },
       thead: [],
       options: []
-    };
+    }
   },
   methods: {
-    //不良模式查询
-    async querymode() {
+    // 不良模式查询
+    // async querymode () {
+    //   const { data } = await axios.post(
+    //     '/api/API/DFS/工程检_不良模式.py',
+    //     qs.stringify({
+    //       工段: this.form.工段
+    //     })
+    //   )
+    //   if (data.state === '') {
+    //     data.date = data.data.split(',')
+    //     this.options.push(data.data.split(','))
+    //     console.log(this.options)
+    //   } else {
+    //     alert(data.state)
+    //   }
+    // },
+    // G检数据查询
+    async onSubmit () {
+      // this.loading = true;
+      this.tableData = []
+      this.thead = []
       const { data } = await axios.post(
-        "../API/DFS/工程检_不良模式.py",
-        qs.stringify({
-          工段: this.form.工段
-        })
-      );
-      if (data.state === "") {
-        data.date = data.data.split(",");
-        this.options.push(data.data.split(","));
-        console.log(this.options);
-      } else {
-        alert(data.state);
-      }
-    },
-    //G检数据查询
-    async onSubmit() {
-      this.loading = true;
-      this.tableData = [];
-      this.thead = [];
-      const { data } = await axios.post(
-        "../API/LOT RELEASE/LOTRELEASE_LOT发生率.py",
+        '/api/API/LOT RELEASE/LOTRELEASE_LOT发生率.py',
         qs.stringify(this.form)
-      );
-      if (data.data.length == 0) {
+      )
+      if (data.data.length === 0) {
         this.$message({
-          message: "暂无数据",
-          type: "warning",
-          duration: "1500"
-        });
+          message: '暂无数据',
+          type: 'warning',
+          duration: '1500'
+        })
       }
-      if (data.state === "") {
+      if (data.state === '') {
         data.data.forEach(element => {
           this.thead.push({
-            //表头数据
+            // 表头数据
             品名: element.品名,
             简称: element.简称,
             面取数: element.面取数,
             LOTNO: element.LOT
-          });
-        });
+          })
+        })
 
-        let _data = data.data;
-        let _data_length = data.data.length;
+        let _data = data.data
+        let _data_length = data.data.length
         for (
-          //第一个for循环取每一项的键名
+          // 循环取每一项的键名
           let index1 = 4;
           index1 < Object.keys(_data[0]).length;
           index1++
         ) {
-          let datakey = Object.keys(_data[0])[index1];
-          let newmap = new Map();
-          newmap.set("mode", datakey);
+          let datakey = Object.keys(_data[0])[index1]
+          let newmap = new Map()
+          newmap.set('mode', datakey)
           for (let index2 = 0; index2 < _data_length; index2++) {
-            //第二个for取出之前键名对应的值
-            let datavalue = _data[index2][Object.keys(_data[0])[index1]];
-            if (datakey == "投入日期") {
-              datavalue = datavalue.slice(0, 10);
+            // 取出键名对应的值
+            let datavalue = _data[index2][Object.keys(_data[0])[index1]]
+            if (datakey === '投入日期') {
+              datavalue = datavalue.slice(0, 10)
             }
-            newmap.set(_data[index2][Object.keys(_data[index2])[0]], datavalue);
+            newmap.set(_data[index2][Object.keys(_data[index2])[0]], datavalue)
           }
-          let newobj = this.strMapToObj(newmap);
-          this.tableData.push(newobj);
-          this.loading = false;
+          let newobj = this.strMapToObj(newmap)
+          this.tableData.push(newobj)
+          console.log(this.tableData);
+          
+          this.loading = false
         }
       }
     },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
+    tableCellClasscolor ({ row, column, rowIndex, columnIndex }) {
+
     },
-    //Lot异常处置信息查询
-    async querylot(lot) {
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    // Lot异常处置信息查询
+    async querylot (lot) {
       const { data } = await axios.post(
-        "../API/LOT RELEASE/制品指示.py",
+        '/api/API/LOT RELEASE/制品指示.py',
         qs.stringify({
           LOT: lot
         })
-      );
+      )
       if (data.data.length === 0) {
         this.$message({
-          message: "暂无数据",
-          type: "warning",
-          duration: "1500"
-        });
+          message: '暂无数据',
+          type: 'warning',
+          duration: '1500'
+        })
       } else {
-        this.table = true;
-        this.querylotNo = lot;
-        this.LotData = data.data;
+        this.table = true
+        this.querylotNo = lot
+        this.LotData = data.data
       }
     },
-    //表格导出
-    output(tableID) {
-      let table = document.querySelector("#mytable").cloneNode(true);
+    // 表格导出
+    output (tableID) {
+      let table = document.querySelector('#mytable').cloneNode(true)
       // fixed属性导致多出一个table，会下载重复内容，删除掉
-      table.removeChild(table.querySelector(".el-table__fixed"));
-      let wb = XLSX.utils.table_to_book(table, { raw: true });
+      table.removeChild(table.querySelector('.el-table__fixed'))
+      let wb = XLSX.utils.table_to_book(table, { raw: true })
       /* get binary string as output */
       let wbout = XLSX.write(wb, {
-        bookType: "xlsx",
+        bookType: 'xlsx',
         bookSST: true,
-        type: "array"
-      });
+        type: 'array'
+      })
       try {
         FileSaver.saveAs(
-          new Blob([wbout], { type: "application/octet-stream" }),
-          "lotrelease.xlsx"
-        );
+          new Blob([wbout], { type: 'application/octet-stream' }),
+          'lotrelease.xlsx'
+        )
       } catch (e) {
-        if (typeof console !== "undefined") console.log(e, wbout);
+        if (typeof console !== 'undefined') console.log(e, wbout)
       }
-      return wbout;
+      return wbout
     },
-    //Map转obj
-    strMapToObj(strMap) {
-      let obj = Object.create(null);
+    // Map转obj
+    strMapToObj (strMap) {
+      let obj = Object.create(null)
       for (let [k, v] of strMap) {
-        obj[k] = v;
+        obj[k] = v
       }
-      return obj;
+      return obj
     },
-    //首列合并
-    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+    // 首列合并
+    objectSpanMethod ({ row, column, rowIndex, columnIndex }) {
       if (columnIndex === 0) {
-        //列号为0
+        // 列号为0
         if (rowIndex % this.tableData.length === 0) {
-          //要合并的行为总行数
+          // 要合并的行为总行数
           return {
-            rowspan: this.tableData.length, //合并的行数就是总行数
-            colspan: 1 //合并到第一列
-          };
+            rowspan: this.tableData.length, // 合并的行数就是总行数
+            colspan: 1 // 合并到第一列
+          }
         } else {
           return {
             rowspan: 0,
             colspan: 0
-          };
+          }
         }
       }
     }
   }
-};
+}
 </script>
 <style>
 body {
@@ -366,11 +376,11 @@ td {
   text-align: center !important;
 }
 
-
 .el-table__fixed-right {
   height: 100% !important;
 }
 /* .demo-form-inline{
     width: 150px
 } */
+
 </style>
